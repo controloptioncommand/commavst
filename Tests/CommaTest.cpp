@@ -341,7 +341,7 @@ int main (int argc, char** argv)
         CHECK (u.getLayout().count == 2, "redo add");
         u.undo.beginNewTransaction();
         setParam (u, moduleParam (4, "mix"), 20.0f);
-        pumpMessages (200);   // APVTS пишет значение в дерево по таймеру
+        u.apvts.copyState();   // APVTS пишет значения в дерево по таймеру; copyState() сбрасывает их сразу
         u.undo.beginNewTransaction();
         u.undo.undo();
         pumpMessages (100);
