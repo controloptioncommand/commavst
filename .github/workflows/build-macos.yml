@@ -16,9 +16,9 @@ concurrency:
 
 jobs:
   build:
-    # Как у Mist, Eido, Sumi, chrōma и Granula: Intel-сервер, плагин собирается универсальным (arm64 + x86_64),
-    # тесты и валидаторы проверяют x86_64-часть.
-    runs-on: macos-15-intel
+    # Сервер Apple Silicon: плагин собирается универсальным (arm64 + x86_64), тесты и валидаторы проверяют arm64-часть
+    # (у братьев — Intel-сервер, но раннеры macos-15-intel подолгу не выдаются, а Apple Silicon у Comma в приоритете).
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
