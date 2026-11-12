@@ -16,9 +16,14 @@ concurrency:
 
 jobs:
   build:
-    # Сервер Apple Silicon: плагин собирается универсальным (arm64 + x86_64), тесты и валидаторы проверяют arm64-часть
-    # (у братьев — Intel-сервер, но раннеры macos-15-intel подолгу не выдаются, а Apple Silicon у Comma в приоритете).
-    runs-on: macos-15
+    # macOS-раннеры GitHub временами не выдаются: сборка идёт сразу на трёх типах, релиз — из первой удачной.
+    # Плагин везде универсальный (arm64 + x86_64); тест и валидаторы проверяют родную часть раннера.
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ macos-15, macos-14, macos-15-intel ]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,7 +47,7 @@ jobs:
             build/_deps/clap_juce_extensions-src
             build/_deps/tuning_library-src
             build/_deps/mts_esp-src
-          key: deps-juce-8.0.10-cje-6bde108-tl-d6fcc08-mts-f214739-${{ runner.os }}-${{ github.repository }}
+          key: deps-juce-8.0.10-cje-6bde108-tl-d6fcc08-mts-f214739-${{ matrix.runner }}-${{ github.repository }}
 
       - name: Configure
         run: cmake -B build -G Xcode -DCOMMA_BUILD_TESTS=ON "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
@@ -83,22 +88,39 @@ jobs:
           cp -R build/Comma_artefacts/Release/AU/Comma.component dist/
           cp -R build/Comma_artefacts/Release/CLAP/Comma.clap dist/
           cp scripts/install-mac.sh dist/
-          # руководство появится вместе со звучащими модулями
           if [ -f docs/Comma-manual.pdf ]; then cp docs/Comma-manual.pdf dist/; fi
           cd dist && zip -qry ../Comma-macOS.zip .
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Comma-macOS
+          name: Comma-macOS-${{ matrix.runner }}
           path: Comma-macOS.zip
 
-      # Текущая версия: архив + патчноут. Постоянная ссылка:
-      # https://github.com/controloptioncommand/commavst/releases/latest/download/Comma-macOS.zip
+  # Текущая версия: архив + патчноут. Постоянная ссылка:
+  # https://github.com/controloptioncommand/commavst/releases/latest/download/Comma-macOS.zip
+  publish:
+    needs: build
+    if: always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Comma-macOS-*
+          path: artifacts
+
       - name: Publish release
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # архив из первой удачной сборки: Apple Silicon, потом остальные
+          ZIP=""
+          for r in macos-15 macos-14 macos-15-intel; do
+            if [ -f "artifacts/Comma-macOS-$r/Comma-macOS.zip" ]; then ZIP="artifacts/Comma-macOS-$r/Comma-macOS.zip"; echo "Архив со сборки $r"; break; fi
+          done
+          [ -n "$ZIP" ] || { echo "::error::Ни одна сборка не прошла"; exit 1; }
+          cp "$ZIP" Comma-macOS.zip
           # имя релиза — из файла VERSION; повторная сборка той же версии обновляет релиз
           VERSION="$(tr -d '[:space:]' < VERSION)"
           gh release delete "$VERSION" --cleanup-tag -y || true
