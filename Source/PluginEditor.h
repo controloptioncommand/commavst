@@ -27,6 +27,7 @@ public:
     RackView& getRackForTest() { return rackView; }
     void showAboutForTest (bool show, bool game) { showAbout (show); if (show) about.showGame (game); }
     void pumpForTest() { timerCallback(); }
+    void setViewTabForTest (int t) { view.setTab (t); }
     void rollDiceForTest() { dice.triggerClick(); }
     RandomizerOptions& getDiceOptionsForTest() { return diceOptions; }
 
@@ -40,6 +41,10 @@ private:
     void setThemeMode (ThemeMode m);
     void applyThemeMode();
     void loadRandomizerOptions();
+    void showTuningMenu();
+    void openScalaChooser (bool kbm);
+    void editRatios();
+    void askEdo();
     void setRandomizerGroup (RandomizerOptions::Group g, bool allowed);
 
     CommaProcessor& proc;
@@ -52,6 +57,8 @@ private:
     IconButton prevPreset { IconButton::Prev, "Previous preset" }, nextPreset { IconButton::Next, "Next preset" },
                settingsButton { IconButton::Settings, "Settings" }, dice { IconButton::Dice, "Randomize" };
     TextLinkButton presetName;
+    MenuPill tuningChip { "Tuning" };
+    std::unique_ptr<juce::FileChooser> chooser;
     InMeter inMeter;
     OutMeter outMeter;
     juce::Rectangle<int> toolbarArea;

@@ -291,8 +291,10 @@ void Rack::process (juce::AudioBuffer<float>& io, int numSamples, const Controls
         if (fade != Fade::None) n = juce::jmin (n, fadeLen - fadePos);
 
         for (int ch = 0; ch < numCh; ++ch) cur.copyFrom (ch, 0, io, ch, off, n);
+        ProcessContext chunk = ctx;
+        chunk.blockOffset = ctx.blockOffset + off;
         for (int i = 0; i < active.count; i = active.groupEnd (i) + 1)
-            processGroup (i, active.groupEnd (i), numCh, n, c, ctx);
+            processGroup (i, active.groupEnd (i), numCh, n, c, chunk);
 
         if (fade != Fade::None)
         {

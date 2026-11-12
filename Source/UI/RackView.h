@@ -1,6 +1,7 @@
 #pragma once
 #include "Widgets.h"
 #include "PluginProcessor.h"
+#include "ModulePanel.h"
 
 namespace comma
 {
@@ -87,6 +88,7 @@ private:
 
     CommaProcessor& proc;
     std::array<std::unique_ptr<SlotCard>, kNumModules> cards;
+    std::array<std::unique_ptr<ModulePanel>, kNumModules> panels;
     std::array<LinkButton, kMaxSlots - 1> links;
     AddButton add;
     RackLayout shown;

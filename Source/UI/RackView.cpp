@@ -6,7 +6,7 @@ using LnF = CommaLookAndFeel;
 
 namespace
 {
-constexpr int kLinkW = 24, kCardH = 150;
+constexpr int kLinkW = 24, kCardH = 112;
 
 bool isOn (CommaProcessor& p, int m) { return p.apvts.getRawParameterValue (moduleParam (m, "on"))->load() > 0.5f; }
 }
@@ -71,10 +71,20 @@ void SlotCard::resized()
 {
     auto r = getLocalBounds();
     close.setBounds (r.getRight() - 28, 3, 26, 28);
-    auto foot = r.removeFromBottom (34).reduced (10, 6);
+    auto foot = r.removeFromBottom (30).reduced (10, 4);
     on.setBounds (foot.removeFromLeft (70));
-    r.removeFromTop (30);
-    mix.setBounds (r.reduced (6, 0));
+    r.removeFromTop (28);
+    // ручка Mix слева, подпись и значение справа (в карточке мало высоты)
+    mix.setBounds (r.reduced (8, 0));
+    auto m = mix.getLocalBounds();
+    const int k = juce::jmin (44, m.getHeight());
+    mix.slider.setBounds (m.removeFromLeft (k).withSizeKeepingCentre (k, k));
+    m.removeFromLeft (8);
+    auto text = m.withSizeKeepingCentre (m.getWidth(), 30);
+    mix.label.setBounds (text.removeFromTop (16));
+    mix.value.setBounds (text);
+    mix.label.setJustificationType (juce::Justification::centredLeft);
+    mix.value.setJustificationType (juce::Justification::centredLeft);
 }
 
 void SlotCard::mouseDown (const juce::MouseEvent& e)
@@ -203,6 +213,11 @@ RackView::RackView (CommaProcessor& p) : proc (p)
             refresh();
         };
     }
+    for (int m = 0; m < kNumModules; ++m)
+    {
+        panels[(size_t) m] = std::make_unique<ModulePanel> (p, m);
+        addChildComponent (*panels[(size_t) m]);
+    }
     addAndMakeVisible (add);
     add.onClick = [this] { openAddMenu(); };
     refresh();
@@ -227,6 +242,8 @@ void RackView::selectModule (int m)
 {
     selected = m;
     for (auto& c : cards) c->setSelected (c->getModule() == m);
+    for (int i = 0; i < kNumModules; ++i)
+        if (panels[(size_t) i] != nullptr) panels[(size_t) i]->setVisible (i == m);
     repaint();
 }
 
@@ -283,12 +300,13 @@ void RackView::refresh()
         selectModule (selected);
         layoutCards();
     }
+    if (selected >= 0 && panels[(size_t) selected] != nullptr) panels[(size_t) selected]->refresh();
     for (int i = 0; i < l.count; ++i)
     {
         auto& c = *cards[(size_t) l.module[(size_t) i]];
         const float a = isOn (proc, c.getModule()) ? 1.0f : 0.5f;
         for (auto* ch : c.getChildren())
-            if (dynamic_cast<ParamKnob*> (ch) != nullptr && ch->getAlpha() != a) { ch->setAlpha (a); c.repaint(); }
+            if (dynamic_cast<ParamKnob*> (ch) != nullptr && std::abs (ch->getAlpha() - a) > 0.01f) { ch->setAlpha (a); c.repaint(); }
     }
 }
 
@@ -326,7 +344,7 @@ void RackView::paint (juce::Graphics& g)
         const int e = l.groupEnd (i);
         if (e == i) continue;
         const auto a = cardBounds (i), b = cardBounds (e);
-        const float y = (float) a.getBottom() + 9.0f, x0 = (float) a.getX() + 10.0f, x1 = (float) b.getRight() - 10.0f;
+        const float y = (float) a.getBottom() + 7.0f, x0 = (float) a.getX() + 10.0f, x1 = (float) b.getRight() - 10.0f;
         g.setColour (Colours::ink2.withAlpha (0.7f));
         g.drawHorizontalLine ((int) y, x0, x1);
         g.drawVerticalLine ((int) x0, y - 4.0f, y + 1.0f);
@@ -338,7 +356,7 @@ void RackView::paint (juce::Graphics& g)
 
     // разделитель и сведения о выбранном модуле
     g.setColour (Colours::outline);
-    g.drawHorizontalLine (detailArea.getY() - 12, (float) detailArea.getX(), (float) detailArea.getRight());
+    g.drawHorizontalLine (detailArea.getY() - 8, (float) detailArea.getX(), (float) detailArea.getRight());
     auto d = detailArea;
     if (selected < 0)
     {
@@ -359,11 +377,9 @@ void RackView::paint (juce::Graphics& g)
     g.setFont (LnF::mono (LnF::Type::footnote));
     g.drawText ("Slot " + juce::String (idx + 1) + midDot() + (l.isParallel (idx) || (idx + 1 < l.count && l.isParallel (idx + 1)) ? "parallel" : "serial"),
                 top, juce::Justification::centredLeft);
-    d.removeFromTop (4);
+    d.removeFromTop (2);
     g.setFont (LnF::font (LnF::Type::callout));
     g.drawText (info.description, d.removeFromTop (18), juce::Justification::centredLeft, true);
-    g.drawText ("Controls arrive in stage " + juce::String (info.stage) + ". Until then the slot passes audio through unchanged.",
-                d.removeFromTop (18), juce::Justification::centredLeft, true);
 }
 
 void RackView::paintOverChildren (juce::Graphics& g)
@@ -381,12 +397,13 @@ void RackView::paintOverChildren (juce::Graphics& g)
 void RackView::resized()
 {
     auto r = getLocalBounds();
-    headArea = r.removeFromTop (44);
+    headArea = r.removeFromTop (40);
     add.setBounds (headArea.getRight() - 150, headArea.getY(), 150, 28);
     r.removeFromTop (8);
-    rowArea = r.removeFromTop (kCardH + 28);
-    r.removeFromTop (24);
+    rowArea = r.removeFromTop (kCardH + 20);
+    r.removeFromTop (16);
     detailArea = r;
+    for (auto& pn : panels) if (pn != nullptr) pn->setBounds (detailArea.withTrimmedTop (46));
     hasShown = false;
     refresh();
 }

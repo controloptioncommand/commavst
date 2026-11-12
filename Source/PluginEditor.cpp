@@ -30,8 +30,10 @@ CommaEditor::CommaEditor (CommaProcessor& p)
     addAndMakeVisible (content);
 
     // тулбар
-    for (juce::Component* c : std::initializer_list<juce::Component*> { &logo, &prevPreset, &presetName, &nextPreset, &dice, &inMeter, &outMeter, &settingsButton })
+    for (juce::Component* c : std::initializer_list<juce::Component*> { &logo, &prevPreset, &presetName, &nextPreset, &dice, &tuningChip, &inMeter, &outMeter, &settingsButton })
         content.addAndMakeVisible (c);
+    tuningChip.setTitle ("Tuning");
+    tuningChip.onOpen = [this] { showTuningMenu(); };
     logo.onClick = [this] { showAbout (true); };
     presetName.setTitle ("Preset");
     presetName.onClick = [this] { showPresetMenu(); };
@@ -39,8 +41,8 @@ CommaEditor::CommaEditor (CommaProcessor& p)
     nextPreset.onClick = [this] { proc.presets.step (1); };
     settingsButton.onClick = [this] { showSettingsMenu(); };
     loadRandomizerOptions();
-    dice.setDescription ("Randomizes the modules in the rack within safe limits. Volume, bypass and the set of modules stay as they are. "
-                         "Choose what it may change in Settings, Randomizer.");
+    dice.setDescription ("Randomizes the modules in the rack within safe limits. Volume, bypass, the tuning, the note layer and the set of modules "
+                         "stay as they are. Choose what it may change in Settings, Randomizer.");
     dice.onClick = [this] { randomizePatch (proc, rng, diceOptions); };
 
     content.addAndMakeVisible (view);
@@ -52,7 +54,7 @@ CommaEditor::CommaEditor (CommaProcessor& p)
     status.setJustificationType (juce::Justification::centredRight);
     footHint.setFont (LnF::font (LnF::Type::callout));
     footHint.setJustificationType (juce::Justification::centredLeft);
-    footHint.setText ("Drag a slot to reorder. Notes come in over MIDI and MPE.", juce::dontSendNotification);
+    footHint.setText ("Drag a slot to reorder. Notes come in over MIDI and MPE. Middle C is C3.", juce::dontSendNotification);
     footHint.setColour (juce::Label::textColourId, Colours::ink2);
 
     content.addChildComponent (about);
@@ -214,6 +216,8 @@ void CommaEditor::showSettingsMenu()
     m.addItem (10, "Undo", proc.undo.canUndo());
     m.addItem (11, "Redo", proc.undo.canRedo());
     m.addItem (12, "Add module...", proc.getLayout().count < kMaxSlots);
+    m.addItem (13, "Load Scala file...");
+    m.addItem (14, "Act as MTS-ESP master", true, proc.isMtsMaster());
     m.addItem (2000, "Save preset...");
     m.addSeparator();
     m.addItem (5, "About Comma");
@@ -223,6 +227,14 @@ void CommaEditor::showSettingsMenu()
         else if (r == 10) { proc.undo.undo(); rackView.refresh(); }
         else if (r == 11) { proc.undo.redo(); rackView.refresh(); }
         else if (r == 12) rackView.openAddMenu();
+        else if (r == 13) openScalaChooser (false);
+        else if (r == 14)
+        {
+            if (! proc.setMtsMaster (! proc.isMtsMaster()))
+                juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::InfoIcon, "MTS-ESP",
+                                                        "Comma can't become the MTS-ESP master: another master is running, or the MTS-ESP library is not installed. "
+                                                        "Install it with any MTS-ESP master, for example the free MTS-ESP Mini.");
+        }
         else if (r == 2000) savePreset();
         else if (r == 201) setThemeMode (ThemeMode::System);
         else if (r == 202) setThemeMode (ThemeMode::Oxygen);
@@ -239,6 +251,112 @@ void CommaEditor::showSettingsMenu()
             setSize (kBaseW * pct / 100, kBaseH * pct / 100);
         }
     });
+}
+
+// ---------------------------------------------------------------------------
+// Строй
+void CommaEditor::showTuningMenu()
+{
+    const int src = juce::roundToInt (proc.getParam (P::TunSource));
+    const int edo = juce::roundToInt (proc.getParam (P::TunEdo));
+    juce::PopupMenu m, edos, ratios, root, ref;
+    m.addItem (1, "12-EDO", true, src == 0);
+    for (int n : { 5, 7, 10, 15, 17, 19, 22, 24, 31, 41, 53, 72 })
+        edos.addItem (100 + n, juce::String (n) + "-EDO", true, src == 1 && edo == n);
+    edos.addSeparator();
+    edos.addItem (99, "Other...", true, src == 1 && edo != 5 && edo != 7 && edo != 10 && edo != 15 && edo != 17 && edo != 19 && edo != 22
+                                                 && edo != 24 && edo != 31 && edo != 41 && edo != 53 && edo != 72);
+    m.addSubMenu ("N-EDO", edos, true, nullptr, src == 1);
+    ratios.addItem (201, "5-limit just intonation");
+    ratios.addItem (202, "7-limit just intonation");
+    ratios.addItem (203, "Harmonics 8 to 16");
+    ratios.addSeparator();
+    ratios.addItem (200, "Edit ratios...");
+    m.addSubMenu ("Ratios", ratios, true, nullptr, src == 2);
+    m.addItem (3, "Load Scala .scl...", true, src == 3);
+    m.addItem (4, "Load keyboard map .kbm...");
+    const auto kbmName = proc.apvts.state.getChildWithName ("Tuning").getProperty ("kbmName").toString();
+    m.addItem (5, "Clear .kbm" + (kbmName.isNotEmpty() ? " (" + kbmName + ")" : juce::String()), kbmName.isNotEmpty());
+    m.addSeparator();
+    m.addItem (6, proc.hasMtsMaster() || src == 4 ? "MTS-ESP: follow the master" : "MTS-ESP: no master found", true, src == 4);
+    m.addSeparator();
+    const int rt = juce::roundToInt (proc.getParam (P::TunRoot));
+    const auto names = spec (P::TunRoot).choices;
+    for (int i = 0; i < 12; ++i) root.addItem (300 + i, names[i], true, rt == i);
+    m.addSubMenu ("Root", root);
+    const float a4 = proc.getParam (P::TunRef);
+    for (int hz : { 415, 432, 440, 442, 444 }) ref.addItem (400 + hz, "A4 = " + juce::String (hz) + " Hz", true, std::abs (a4 - (float) hz) < 0.01f);
+    m.addSubMenu ("Reference", ref);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (tuningChip), [this] (int r)
+    {
+        juce::String err;
+        if (r == 1) proc.setParam (P::TunSource, 0.0f);
+        else if (r > 100 && r < 200) { proc.setParam (P::TunEdo, (float) (r - 100)); proc.setParam (P::TunSource, 1.0f); }
+        else if (r == 99) askEdo();
+        else if (r == 200) editRatios();
+        else if (r == 201) proc.setRatios ("1/1 16/15 9/8 6/5 5/4 4/3 45/32 3/2 8/5 5/3 9/5 15/8 2/1", err);
+        else if (r == 202) proc.setRatios ("1/1 15/14 8/7 7/6 5/4 4/3 7/5 3/2 8/5 5/3 7/4 15/8 2/1", err);
+        else if (r == 203) proc.setRatios ("9/8 10/8 11/8 12/8 13/8 14/8 15/8 2/1", err);
+        else if (r == 3) openScalaChooser (false);
+        else if (r == 4) openScalaChooser (true);
+        else if (r == 5) proc.clearKbm();
+        else if (r == 6) proc.setParam (P::TunSource, 4.0f);
+        else if (r >= 300 && r < 312) proc.setParam (P::TunRoot, (float) (r - 300));
+        else if (r > 400 && r < 500) proc.setParam (P::TunRef, (float) (r - 400));
+        proc.refreshTuning();
+    });
+}
+
+void CommaEditor::openScalaChooser (bool kbm)
+{
+    chooser = std::make_unique<juce::FileChooser> (kbm ? "Load a keyboard map" : "Load a Scala scale",
+                                                   juce::File::getSpecialLocation (juce::File::userDocumentsDirectory), kbm ? "*.kbm" : "*.scl");
+    chooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [this] (const juce::FileChooser& fc)
+    {
+        const auto f = fc.getResult();
+        if (! f.existsAsFile()) return;
+        juce::String err;
+        if (! proc.loadScalaFile (f, err))
+            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Comma", err);
+    });
+}
+
+void CommaEditor::editRatios()
+{
+    dialog = std::make_unique<juce::AlertWindow> ("Ratios", "Steps of the scale as ratios or cents, separated by spaces. The last one is the period, for example "
+                                                            "1/1 9/8 5/4 4/3 3/2 5/3 15/8 2/1, or 3/2 7/4 11/8 2/1.", juce::MessageBoxIconType::NoIcon);
+    dialog->addTextEditor ("ratios", proc.getRatios(), "Ratios");
+    dialog->addButton ("Apply", 1, juce::KeyPress (juce::KeyPress::returnKey));
+    dialog->addButton ("Cancel", 0, juce::KeyPress (juce::KeyPress::escapeKey));
+    dialog->enterModalState (true, juce::ModalCallbackFunction::create ([this] (int r)
+    {
+        if (r == 1 && dialog != nullptr)
+        {
+            juce::String err;
+            if (! proc.setRatios (dialog->getTextEditorContents ("ratios"), err))
+                juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Comma", err);
+        }
+        dialog.reset();
+    }), false);
+}
+
+void CommaEditor::askEdo()
+{
+    dialog = std::make_unique<juce::AlertWindow> ("N-EDO", "Equal steps per octave, 1 to 96.", juce::MessageBoxIconType::NoIcon);
+    dialog->addTextEditor ("n", juce::String (juce::roundToInt (proc.getParam (P::TunEdo))), "Steps");
+    dialog->addButton ("Apply", 1, juce::KeyPress (juce::KeyPress::returnKey));
+    dialog->addButton ("Cancel", 0, juce::KeyPress (juce::KeyPress::escapeKey));
+    dialog->enterModalState (true, juce::ModalCallbackFunction::create ([this] (int r)
+    {
+        if (r == 1 && dialog != nullptr)
+        {
+            const int n = juce::jlimit (1, 96, dialog->getTextEditorContents ("n").getIntValue());
+            proc.setParam (P::TunEdo, (float) n);
+            proc.setParam (P::TunSource, 1.0f);
+            proc.refreshTuning();
+        }
+        dialog.reset();
+    }), false);
 }
 
 // ---------------------------------------------------------------------------
@@ -281,9 +399,10 @@ void CommaEditor::resized()
         outMeter.setBounds (h.removeFromRight (140));
         h.removeFromRight (14);
         inMeter.setBounds (h.removeFromRight (118));
+        tuningChip.setBounds (toolbarArea.withSizeKeepingCentre (300, 32));
     }
     r.removeFromTop (10);
-    view.setBounds (r.removeFromTop (250));
+    view.setBounds (r.removeFromTop (200));
     r.removeFromTop (10);
     panelArea = r;
 
@@ -301,6 +420,13 @@ void CommaEditor::timerCallback()
     // правки, сделанные за одно движение мыши, — один шаг undo
     if (! juce::ModifierKeys::currentModifiers.isAnyMouseButtonDown()) proc.undo.beginNewTransaction();
     rackView.refresh();
+    proc.analyseInput();
+    view.tick();
+    if (auto t = proc.getTuning()) tuningChip.setText (t->name + midDot() + t->detail);
+    const auto err = proc.getTuningError();
+    const auto hint = err.isNotEmpty() ? err : juce::String ("Drag a slot to reorder. Notes come in over MIDI and MPE. Middle C is C3.");
+    if (footHint.getText() != hint) footHint.setText (hint, juce::dontSendNotification);
+    footHint.setColour (juce::Label::textColourId, err.isNotEmpty() ? Colours::signal : Colours::ink2);
     outMeter.setLevel (proc.outPeak.load());
     inMeter.setLevel (proc.inPeak.load());
     presetName.setButtonText (proc.presets.getCurrentName());

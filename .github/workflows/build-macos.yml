@@ -40,7 +40,9 @@ jobs:
           path: |
             build/_deps/juce-src
             build/_deps/clap_juce_extensions-src
-          key: deps-juce-8.0.10-cje-6bde108-${{ runner.os }}-${{ github.repository }}
+            build/_deps/tuning_library-src
+            build/_deps/mts_esp-src
+          key: deps-juce-8.0.10-cje-6bde108-tl-d6fcc08-mts-f214739-${{ runner.os }}-${{ github.repository }}
 
       - name: Configure
         run: cmake -B build -G Xcode -DCOMMA_BUILD_TESTS=ON "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"

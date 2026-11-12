@@ -399,4 +399,52 @@ void repaintTree (juce::Component& root)
     for (auto* c : root.getChildren()) repaintTree (*c);
     root.repaint();
 }
+// ===========================================================================
+ChoiceSegmented::ChoiceSegmented (APVTS& s, const juce::String& id, const juce::StringArray& names)
+{
+    std::vector<Item> it;
+    for (int i = 0; i < names.size(); ++i) it.push_back ({ names[i], i });
+    setItems (it);
+    if (auto* p = s.getParameter (id)) setTitle (p->getName (40));
+    attachment = std::make_unique<juce::ParameterAttachment> (*s.getParameter (id), [this] (float v) { setSelectedValue ((int) v); }, nullptr);
+    onChange = [this] (int v) { attachment->setValueAsCompleteGesture ((float) v); };
+    attachment->sendInitialUpdate();
+}
+
+// ===========================================================================
+MenuPill::MenuPill (const juce::String& cap) : caption (cap)
+{
+    setWantsKeyboardFocus (true);
+    setTitle (cap);
+}
+
+void MenuPill::paint (juce::Graphics& g)
+{
+    auto r = getLocalBounds().toFloat().reduced (0.5f);
+    const float rad = juce::jmin (r.getHeight() * 0.5f, 8.0f);
+    g.setColour (Colours::well);
+    g.fillRoundedRectangle (r, rad);
+    g.setColour (Colours::outline);
+    g.drawRoundedRectangle (r, rad, 1.0f);
+    auto t = getLocalBounds().reduced (12, 0);
+    g.setFont (LnF::font (LnF::Type::callout));
+    g.setColour (Colours::ink2);
+    const int cw = juce::GlyphArrangement::getStringWidthInt (g.getCurrentFont(), caption);
+    g.drawText (caption, t.removeFromLeft (cw + 6), juce::Justification::centredLeft);
+    g.setColour (Colours::ink);
+    g.setFont (LnF::font (LnF::Type::callout, true));
+    g.drawFittedText (text, t.withTrimmedRight (14), juce::Justification::centredLeft, 1, 0.85f);
+    juce::Path arrow;
+    const float ax = (float) getWidth() - 16.0f, ay = (float) getHeight() * 0.5f;
+    arrow.startNewSubPath (ax - 3, ay - 1.5f); arrow.lineTo (ax, ay + 1.5f); arrow.lineTo (ax + 3, ay - 1.5f);
+    g.setColour (Colours::ink2);
+    g.strokePath (arrow, juce::PathStrokeType (1.3f));
+    if (hasKeyboardFocus (false)) LnF::drawFocusRing (g, r, rad);
+}
+
+bool MenuPill::keyPressed (const juce::KeyPress& k)
+{
+    if (k == juce::KeyPress::returnKey || k == juce::KeyPress::spaceKey) { if (onOpen) onOpen(); return true; }
+    return false;
+}
 } // namespace comma

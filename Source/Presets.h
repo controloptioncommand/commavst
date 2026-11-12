@@ -4,13 +4,17 @@
 
 namespace comma
 {
-// Фабричный пресет: состав rack'а и значения ручек (остальные — по умолчанию). Громкость выхода не трогает.
+// Фабричный пресет: состав rack'а, строй и значения ручек (остальные — по умолчанию). Громкость выхода и файлы Scala не трогает.
 struct FactoryPreset
 {
     juce::String name;
     std::vector<int> rack;                                      // модули по порядку
     std::vector<int> parallel;                                  // слоты, которые идут «‖ с предыдущим»
-    std::vector<std::pair<juce::String, float>> values;
+    std::vector<std::pair<int, float>> values;                  // P::… → значение
+    juce::String ratios;                                        // строй «Ratios», если шаблон его задаёт
+
+    FactoryPreset (juce::String n, std::vector<int> r, std::vector<int> par, std::vector<std::pair<int, float>> v, juce::String rat = {})
+        : name (std::move (n)), rack (std::move (r)), parallel (std::move (par)), values (std::move (v)), ratios (std::move (rat)) {}
 };
 
 const std::vector<FactoryPreset>& factoryPresets();

@@ -135,6 +135,34 @@ private:
     std::unique_ptr<APVTS::SliderAttachment> attachment;
 };
 
+// Сегменты, привязанные к параметру-выбору
+class ChoiceSegmented : public Segmented
+{
+public:
+    ChoiceSegmented (APVTS& s, const juce::String& paramId, const juce::StringArray& names);
+
+private:
+    std::unique_ptr<juce::ParameterAttachment> attachment;
+};
+
+// Чип с меню и произвольным текстом («Tuning 19-EDO ⌄» и т. п.)
+class MenuPill : public juce::Component
+{
+public:
+    explicit MenuPill (const juce::String& caption);
+    void setText (const juce::String& t) { if (t != text) { text = t; setDescription (caption + " " + t); repaint(); } }
+    void setCaption (const juce::String& c) { if (c != caption) { caption = c; repaint(); } }
+    std::function<void()> onOpen;
+    void paint (juce::Graphics& g) override;
+    void mouseDown (const juce::MouseEvent&) override { if (onOpen) onOpen(); }
+    bool keyPressed (const juce::KeyPress& k) override;
+    void focusGained (FocusChangeType) override { repaint(); }
+    void focusLost (FocusChangeType) override { repaint(); }
+
+private:
+    juce::String caption, text;
+};
+
 void disableClickFocus (juce::Component& root);
 // ряд ручек одинаковой ширины (не шире 96 px), по центру области
 void layoutRow (juce::Rectangle<int> area, std::initializer_list<juce::Component*> items, int gap = 4);

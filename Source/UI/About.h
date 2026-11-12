@@ -6,7 +6,7 @@ namespace comma
 // Версия и дата — показываются на странице About
 namespace AboutInfo
 {
-    inline const char* version = "v0.1";
+    inline const char* version = "v1";
     inline const char* repoUrl = "https://github.com/controloptioncommand/commavst";
     inline const char* authorUrl = "https://t.me/nothiingnothingnothing";
     inline const char* date = "12th November 2026";

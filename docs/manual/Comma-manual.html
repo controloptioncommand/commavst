@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Comma — руководство</title>
+<style>
+@font-face { font-family: "Medeo Sans"; src: url("../../Resources/Fonts/MedeoSans-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Medeo Sans"; src: url("../../Resources/Fonts/MedeoSans-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Medeo Mono"; src: url("../../Resources/Fonts/MedeoMono-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Medeo Mono"; src: url("../../Resources/Fonts/MedeoMono-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Medeo Pixel"; src: url("../../Resources/Fonts/MedeoPixel-Regular.ttf"); }
+
+:root {
+  --window: #E4E5E1; --surface: #F5F5F2; --well: #E9EAE6; --track: #C2C3BE;
+  --ink: #131416; --ink2: #4B4D52; --signal: #E84A00; --carrier: #2740F0; --mod: #D7245E; --live: #138A62;
+  --outline: rgba(19,20,22,.12);
+}
+@page { size: A4; margin: 16mm 16mm 18mm 16mm; }
+@page :first { margin: 0; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: "Medeo Sans", sans-serif; font-size: 10pt; line-height: 1.5; color: var(--ink); background: #fff; }
+h1, h2, h3 { font-weight: 600; line-height: 1.2; margin: 0; }
+h2 { font-size: 20pt; margin: 0 0 4mm; padding-top: 1mm; }
+h2 .n { font-family: "Medeo Mono"; color: var(--signal); font-size: 11pt; vertical-align: 4pt; margin-right: 3mm; }
+h3 { font-size: 12pt; margin: 6mm 0 2mm; }
+p { margin: 0 0 2.5mm; }
+ul, ol { margin: 0 0 3mm; padding-left: 5mm; }
+li { margin-bottom: 1.2mm; }
+b, strong { font-weight: 600; }
+code, .mono { font-family: "Medeo Mono", monospace; font-size: 9pt; }
+code { background: var(--well); border: 1px solid var(--outline); border-radius: 4px; padding: 0 1.2mm; }
+.lead { font-size: 11.5pt; color: var(--ink2); margin-bottom: 5mm; }
+section { break-before: page; }
+.keep { break-inside: avoid; }
+
+figure { margin: 3mm 0 4mm; break-inside: avoid; }
+figure img { width: 100%; max-width: 150mm; margin: 0 auto; display: block; border-radius: 10px; border: 1px solid var(--outline); }
+figcaption { font-size: 8.5pt; color: var(--ink2); margin-top: 1.5mm; text-align: center; }
+.small img { max-width: 110mm; }
+.mid img { max-width: 118mm; }
+.three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+.side { display: grid; grid-template-columns: 52mm 1fr; gap: 6mm; align-items: start; }
+
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 4mm; font-size: 9.3pt; break-inside: auto; }
+th { text-align: left; font-weight: 600; color: var(--ink2); font-size: 8.5pt; text-transform: uppercase; letter-spacing: .04em;
+     border-bottom: 1px solid var(--ink); padding: 1.5mm 2mm 1.5mm 0; }
+td { border-bottom: 1px solid var(--outline); padding: 1.6mm 2mm 1.6mm 0; vertical-align: top; }
+tr { break-inside: avoid; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+td.r { font-family: "Medeo Mono"; font-size: 8.6pt; color: var(--ink2); white-space: nowrap; }
+
+.note { background: var(--surface); border: 1px solid var(--outline); border-left: 3px solid var(--signal); border-radius: 8px;
+        padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; }
+.note b:first-child { color: var(--signal); }
+.chip { display: inline-block; font-size: 8.5pt; font-weight: 600; border-radius: 99px; padding: 0 2mm; border: 1px solid var(--outline); background: var(--surface); }
+.c { color: var(--carrier); font-weight: 600; } .m { color: var(--mod); font-weight: 600; } .s { color: var(--signal); font-weight: 600; }
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps li { counter-increment: s; position: relative; padding-left: 9mm; margin-bottom: 2.5mm; }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: .2mm; width: 6mm; height: 6mm; border-radius: 50%;
+  background: var(--ink); color: #fff; font-family: "Medeo Mono"; font-size: 8.5pt; text-align: center; line-height: 6mm; }
+
+/* обложка */
+.cover { height: 297mm; background: #0F1012; color: #EDEDE9; position: relative; overflow: hidden; break-after: page; }
+.cover .grid { position: absolute; inset: 0; background-image: radial-gradient(rgba(237,237,233,.10) 1px, transparent 1.2px); background-size: 6mm 6mm; }
+.cover .logo { position: absolute; left: 0; right: 0; top: 96mm; text-align: center; font-family: "Medeo Pixel"; font-size: 84pt; line-height: 1; letter-spacing: 0; }
+.cover .sub { position: absolute; left: 0; right: 0; top: 140mm; text-align: center; font-size: 13pt; color: #A9AAAE; }
+.cover .sub b { color: #FF6B2C; font-weight: 600; }
+.cover .shot { position: absolute; left: 38mm; right: 38mm; top: 160mm; }
+.cover .shot img { width: 100%; border-radius: 12px; border: 1px solid rgba(237,237,233,.12); }
+.cover .foot { position: absolute; left: 16mm; right: 16mm; bottom: 12mm; display: flex; justify-content: space-between;
+  font-family: "Medeo Mono"; font-size: 8.5pt; color: #A9AAAE; }
+
+.toc { columns: 2; column-gap: 8mm; list-style: none; padding: 0; margin-top: 4mm; }
+.toc li { break-inside: avoid; display: flex; gap: 3mm; padding: 1.6mm 0; border-bottom: 1px solid var(--outline); }
+.toc .mono { color: var(--signal); width: 7mm; }
+.algs { columns: 2; column-gap: 8mm; font-size: 9pt; }
+.algs div { break-inside: avoid; display: grid; grid-template-columns: 7mm 30mm 1fr; padding: .9mm 0; border-bottom: 1px solid var(--outline); }
+.algs .mono { color: var(--ink2); font-size: 8.3pt; }
+</style>
+<style>
+.mods td:first-child { width: 28mm; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="grid"></div>
+  <div class="logo">Comma</div>
+  <div class="sub">Руководство пользователя · <b>v1</b></div>
+  <div class="shot"><img src="img/main.jpg"></div>
+  <div class="foot"><span>microtonal pitch rack · VST3 · AU · CLAP · macOS</span><span>made by nnn</span></div>
+</div>
+
+<section style="break-before: auto">
+  <h2>Содержание</h2>
+  <ul class="toc">
+    <li><span class="mono">01</span>Что такое Comma</li>
+    <li><span class="mono">02</span>Установка и ноты в DAW</li>
+    <li><span class="mono">03</span>Первый звук за минуту</li>
+    <li><span class="mono">04</span>Окно плагина</li>
+    <li><span class="mono">05</span>Строй</li>
+    <li><span class="mono">06</span>Круг строя и высота входа</li>
+    <li><span class="mono">07</span>Rack</li>
+    <li><span class="mono">08</span>Ноты и MPE</li>
+    <li><span class="mono">09</span>Мод-матрица</li>
+    <li><span class="mono">10</span>Модули</li>
+    <li><span class="mono">11</span>Кубик, пресеты, настройки</li>
+    <li><span class="mono">12</span>Рецепты</li>
+    <li><span class="mono">13</span>Вопросы и ответы</li>
+  </ul>
+
+  <h2 style="margin-top: 10mm"><span class="n">01</span>Что такое Comma</h2>
+  <p class="lead">Comma — rack для экспериментов с высотой тона: микротональность (EDO, чистый строй, строи Scala) и MPE-глайды. Восемь модулей ставятся в цепочку, параллельно или вперемешку, и все слушаются одного строя.</p>
+  <p>Комма — крошечный интервал, на котором держится вся микротональная музыка: разница между двенадцатью чистыми квинтами и семью октавами. Comma про такие расстояния — от пары центов дублера до тритавы Болена — Пирса.</p>
+  <ul>
+    <li><b>Строй</b> общий для всех модулей: 12-EDO, любое N-EDO, свои отношения (3/2, 7/4, 11/8), файлы Scala <code>.scl</code> + <code>.kbm</code> или строй от мастера MTS-ESP.</li>
+    <li><b>Интервал</b> в каждом модуле задаётся в одной из трёх единиц: центы, отношение или шаги строя.</li>
+    <li><b>Ноты MIDI и MPE</b> ведут резонатор, автотюн и мод-матрицу: бенд на каждую ноту, давление, slide, Glide, Snap к ступеням.</li>
+    <li>Модулям, которым ноты не нужны, MIDI не нужен вовсе: Comma работает как обычный аудиоэффект.</li>
+  </ul>
+  <div class="note"><b>Ориентир по звуку</b> — микротональная электроника вроде Aloboi: дрожащие дубли на пару центов, эхо, ступенями поднимающееся по 19-EDO, колокола, настроенные на ступени строя.</div>
+</section>
+
+<section>
+  <h2><span class="n">02</span>Установка и ноты в DAW</h2>
+  <ol class="steps">
+    <li>Скачайте архив <code>Comma-macOS.zip</code> со страницы Releases и распакуйте.</li>
+    <li>В Терминале: <code>bash ~/Downloads/Comma-macOS/install-mac.sh</code>. Скрипт кладёт <code>Comma.vst3</code>, <code>Comma.component</code> и <code>Comma.clap</code> в <code>~/Library/Audio/Plug-Ins</code> и снимает карантин macOS (плагин подписан ad-hoc, без сертификата Apple).</li>
+    <li>Перезапустите DAW или пересканируйте плагины.</li>
+  </ol>
+  <h3>Как отправить в Comma ноты</h3>
+  <table>
+    <tr><th>DAW</th><th>Что сделать</th></tr>
+    <tr><td>Logic Pro</td><td>Comma — Audio Unit типа Music Effect: на аудиодорожке он в меню <b>MIDI-controlled Effects</b>. Ноты — с любой MIDI-дорожки: выберите её в меню <b>Side Chain</b> в заголовке окна плагина.</td></tr>
+    <tr><td>Ableton Live</td><td>VST3 или AU на аудиодорожке. На MIDI-дорожке: MIDI To → дорожка с Comma → Comma. Для MPE-контроллера включите MPE Mode в контекстном меню устройства Comma.</td></tr>
+    <tr><td>Bitwig, Reaper</td><td>CLAP или VST3; ноты — обычной маршрутизацией MIDI в эффект.</td></tr>
+  </table>
+  <p>Модули без нот (Doubler, Staircase, Shifter, Varispeed, Spectral, Harmonizer, Autotune по строю) звучат и без этого.</p>
+  <p>Нужен Mac с macOS 11 или новее, Apple Silicon или Intel.</p>
+
+  <h2 style="margin-top: 8mm"><span class="n">03</span>Первый звук за минуту</h2>
+  <ol class="steps">
+    <li>Поставьте Comma на дорожку с голосом, синтезатором или барабанами.</li>
+    <li>Листайте пресеты стрелками в тулбаре: <b>Micro Double</b>, <b>19-EDO Stairs</b>, <b>Barber Pole</b>, <b>Just Choir</b>.</li>
+    <li>Нажмите на чип <b>Tuning</b> в центре тулбара и выберите другой строй, например 19-EDO или 7-EDO: Staircase и Doubler сразу шагают по новым ступеням.</li>
+    <li>Пришлите в Comma ноты (раздел 02) и откройте <b>Ringing Strings</b> или <b>MPE Glide Rack</b>: каждая нота звенит резонатором на своей высоте.</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="n">04</span>Окно плагина</h2>
+  <figure><img src="img/main_oxygen.jpg"><figcaption>Тулбар, главный вид с кругом строя, rack и панель выбранного модуля.</figcaption></figure>
+  <figure><img src="img/toolbar.jpg"><figcaption>Тулбар.</figcaption></figure>
+  <ul>
+    <li><b>Comma</b> слева — страница About.</li>
+    <li><b>‹ имя ›</b> — пресеты: стрелки листают, клик по имени открывает список и сохранение.</li>
+    <li><b>Кубик</b> — случайные настройки модулей в безопасных пределах (раздел 11).</li>
+    <li><b>Tuning</b> по центру — строй, его ступени и период (раздел 05).</li>
+    <li><b>In</b> — уровень входа; <b>Out</b> — уровень выхода, перетаскивание по шкале меняет громкость (двойной клик — 0 dB).</li>
+    <li>Значок настроек — тема, размер окна, кубик, Undo / Redo, загрузка Scala, мастер MTS-ESP, About.</li>
+  </ul>
+  <figure><img src="img/footer.jpg"><figcaption>Подвал: подсказка или сообщение о строе, число нот, задержка плагина, нагрузка.</figcaption></figure>
+  <p>Окно масштабируется от 50 до 200 %: потяните за угол или выберите размер в настройках → Size.</p>
+</section>
+
+<section>
+  <h2><span class="n">05</span>Строй</h2>
+  <p class="lead">Строй задаёт ступени, к которым тянутся Snap и автотюн, на которых шагают Staircase и Doubler, по которым настраиваются партиалы резонатора и спектр. Он один на весь rack.</p>
+  <table>
+    <tr><th>Источник</th><th>Что это</th></tr>
+    <tr><td>12-EDO</td><td>Обычный равномерный строй, A4 = 440 Гц (меняется в Reference).</td></tr>
+    <tr><td>N-EDO</td><td>N равных ступеней в октаве: 5, 7, 10, 15, 17, 19, 22, 24, 31, 41, 53, 72 или любое от 1 до 96 (Other…). Клавиши идут подряд по ступеням.</td></tr>
+    <tr><td>Ratios</td><td>Свои ступени отношениями или центами: <code>1/1 9/8 5/4 4/3 3/2 5/3 15/8 2/1</code>. Последняя — период (не обязательно октава: <code>3/1</code> — тритава). Готовые: 5-limit и 7-limit just intonation, гармоники 8–16.</td></tr>
+    <tr><td>Scala</td><td>Файл <code>.scl</code>, по желанию — раскладка клавиатуры <code>.kbm</code> (опорная нота и частота, пропущенные клавиши). Файлы сохраняются внутри проекта и пресета.</td></tr>
+    <tr><td>MTS-ESP</td><td>Строй от мастера MTS-ESP (например, бесплатного MTS-ESP Mini). Без мастера — 12-EDO и сообщение в подвале.</td></tr>
+  </table>
+  <p><b>Root</b> — с какой ноты начинается шкала (C … B, для EDO, отношений и <code>.scl</code> без <code>.kbm</code>); частота корня берётся из 12-EDO от <b>Reference</b> (A4 = 415 … 444 Гц).</p>
+  <h3>Три единицы интервала</h3>
+  <table>
+    <tr><th>Единица</th><th>Как считается</th></tr>
+    <tr><td>¢ (центы)</td><td>Сотая полутона 12-EDO. 1200 ¢ — октава.</td></tr>
+    <tr><td>Ratio</td><td>Чистое отношение из списка от 1/2 до 2/1: 16/15, 9/8, 7/6, 5/4, 11/8, 3/2, 7/4, 15/8 … Ниже 1/1 — вниз.</td></tr>
+    <tr><td>Steps</td><td>Шаги текущего строя. Если модуль знает высоту входа (Harmonizer, Autotune, Resonator, Spectral) — это настоящие ступени вокруг неё. Если не знает (Doubler, Staircase) — средний шаг строя: период / число ступеней. В N-EDO это одно и то же.</td></tr>
+  </table>
+  <div class="note"><b>Мастер MTS-ESP.</b> Настройки → Act as MTS-ESP master: Comma сам раздаёт свой строй всем клиентам MTS-ESP в проекте (например, синтезаторам Surge XT и Vital). В системе может быть только один мастер. Нужна библиотека libMTS — её ставит любой мастер MTS-ESP.</div>
+</section>
+
+<section>
+  <h2><span class="n">06</span>Круг строя и высота входа</h2>
+  <figure><img src="img/view_pitch.jpg"><figcaption>Слева круг строя, справа — вкладка Pitch.</figcaption></figure>
+  <ul>
+    <li><b>Круг</b> — один период строя: ступень 0 (корень) сверху, дальше по часовой. Точки — ступени, подписи — их номера или отношения (до 24 ступеней).</li>
+    <li><b>Оранжевая стрелка</b> — высота входа (определение YIN, работает на монофоническом материале).</li>
+    <li><b>Синие точки</b> — ноты MIDI / MPE, которые сейчас держатся, с учётом бенда, Glide и Snap.</li>
+  </ul>
+  <h3>Вкладка Pitch</h3>
+  <ul>
+    <li>Сверху — ближайшая ступень и отклонение от неё в центах, ниже — частота и номер ступени.</li>
+    <li>Шкала ±50 ¢ и история отклонения: видно, как голос попадает в строй и куда уходит.</li>
+    <li>Справа — держащиеся ноты: имя, отклонение от ступени, давление (pressure). При MPE — число member channels.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="n">07</span>Rack</h2>
+  <figure><img src="img/rack.jpg"><figcaption>Пять слотов: Shifter и Resonator идут параллельно, Shifter выключен.</figcaption></figure>
+  <ul>
+    <li>До 8 слотов, каждый модуль — не больше одного раза. <b>Add module</b> — добавить в конец, крестик на карточке — убрать.</li>
+    <li><b>Mix</b> — смесь сухого и обработанного сигнала слота; <b>On</b> — выключенный слот пропускает звук (bypass).</li>
+    <li>Порядок — перетащите карточку за любое место; с клавиатуры — Alt + ← / →, Delete — убрать.</li>
+    <li><b>Связка</b> между карточками: шеврон <code>›</code> — следующий слот обрабатывает выход предыдущего; <code>‖</code> — оба слушают один вход, их выходы смешиваются. Под параллельной группой — скобка «parallel».</li>
+    <li>Клик по карточке открывает ручки модуля под rack'ом.</li>
+  </ul>
+  <h3>Задержка</h3>
+  <p>Модули с анализом в режиме <b>Quality</b> добавляют задержку: Harmonizer и Autotune (PSOLA) — около 50 мс, Spectral — 2048 семплов (1024 в Low latency). Comma сообщает хосту общую задержку: последовательные слоты складываются, параллельные выравниваются по самому медленному. Bypass задержку не меняет, поэтому выключение слота не сдвигает звук.</p>
+  <h3>Undo</h3>
+  <p>⌘Z / ⇧⌘Z или настройки → Undo / Redo: и ручки, и состав rack'а, и строй. В некоторых DAW ⌘Z перехватывает сам хост — тогда пользуйтесь меню.</p>
+</section>
+
+<section>
+  <h2><span class="n">08</span>Ноты и MPE</h2>
+  <figure><img src="img/view_notes.jpg"><figcaption>Вкладка Notes.</figcaption></figure>
+  <p>Comma понимает обычный MIDI и MPE: сообщение конфигурации MCM, member channels, бенд на каждую ноту (по умолчанию ±48 полутонов, у мастер-канала ±2), давление (pressure), CC74 (slide), скорость нажатия (strike) и отпускания (lift). Диапазон бенда меняется ручкой <b>Bend</b> или сообщением RPN 0 от контроллера. До 16 голосов.</p>
+  <table>
+    <tr><th>Ручка</th><th>Что делает</th><th>Диапазон</th></tr>
+    <tr><td>Glide</td><td>Время скольжения от предыдущей ноты к новой.</td><td class="r">0 – 3 с</td></tr>
+    <tr><td>Glide by</td><td>Time — за заданное время; Rate — с постоянной скоростью (ручка Rate).</td><td class="r">Time / Rate</td></tr>
+    <tr><td>Rate</td><td>Скорость скольжения.</td><td class="r">10 – 20000 ¢/с</td></tr>
+    <tr><td>Curve</td><td>Linear, Fast start (быстро в начале), Slow start (медленно в начале).</td><td class="r">3 формы</td></tr>
+    <tr><td>Glide in</td><td>Скольжение линейно в центах (ровно по слуху) или в герцах (быстрее внизу).</td><td class="r">Cents / Hertz</td></tr>
+    <tr><td>Snap</td><td>Магнит: пока высота движется, она свободна; остановилась — притягивается к ближайшей ступени строя.</td><td class="r">0 – 100 %</td></tr>
+    <tr><td>Snap speed</td><td>Как быстро притягивает.</td><td class="r">5 – 1000 мс</td></tr>
+    <tr><td>Character</td><td>От непрерывного портаменто (0 %) к глиссандо по ступеням строя (100 %).</td><td class="r">0 – 100 %</td></tr>
+    <tr><td>Overshoot</td><td>Посадка: перелёт за ступень, когда высота останавливается.</td><td class="r">0 – 50 ¢</td></tr>
+    <tr><td>Vibrato</td><td>Посадка: затухающее вибрато на ступени.</td><td class="r">0 – 50 ¢</td></tr>
+    <tr><td>Decay</td><td>За сколько затухает вибрато посадки.</td><td class="r">50 мс – 3 с</td></tr>
+    <tr><td>Bend</td><td>Диапазон бенда member-каналов (и обычного MIDI).</td><td class="r">±1 – ±96 полутонов</td></tr>
+    <tr><td>MPE for effects</td><td>Чем вести модули без голосов: последней нотой, самой высокой или средним по держащимся.</td><td class="r">Last / Highest / Average</td></tr>
+  </table>
+  <div class="note"><b>Обычная клавиатура.</b> Если контроллер шлёт обычный бенд ±2, поставьте Bend на ±2 — иначе колесо будет уводить ноты на 4 октавы.</div>
+</section>
+
+<section>
+  <h2><span class="n">09</span>Мод-матрица</h2>
+  <figure><img src="img/view_matrix.jpg"><figcaption>Вкладка Matrix: давление ведёт яркость резонатора, slide — расстройку дублера.</figcaption></figure>
+  <p>Восемь строк «источник → ручка модуля, сила». Источники — измерения MPE: <b>Strike</b>, <b>Lift</b>, <b>Pressure</b>, <b>Slide</b>, <b>Bend</b>, <b>Note</b>. Назначение — любая ручка любого модуля, включая Mix (меню сгруппировано по модулям). Сила −100 … +100 % — доля полного хода ручки; двойной клик — 0.</p>
+  <ul>
+    <li><b>Resonator</b> модулируется отдельно для каждого голоса: сильнее нажатая нота звучит ярче, не трогая соседние.</li>
+    <li>Остальные модули обрабатывают общий звук, поэтому MPE для них сводится в одно значение — по настройке <b>MPE for effects</b> (раздел 08).</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="n">10</span>Модули</h2>
+  <p class="lead">Под rack'ом — ручки выбранного модуля. У интервала сверху переключатель единиц: ¢, Ratio, Steps — ручка под ним меняется. У задержки и Shifter — переключатель Sync.</p>
+
+  <h3>Doubler</h3>
+  <figure><img src="img/mod_doubler.jpg"></figure>
+  <p>Две копии: левая выше на интервал, правая ниже (как MicroShift). Линия задержки с двумя головками, сдвинутыми на пол-окна, окно Ханна.</p>
+  <table class="mods">
+    <tr><td>Detune / Ratio / Steps</td><td>Интервал: 0 – 100 ¢, отношение или 0 – 12 шагов строя (средним шагом).</td><td class="r">9 ¢</td></tr>
+    <tr><td>Delay</td><td>Задержка копий.</td><td class="r">0 – 30 мс</td></tr>
+    <tr><td>Focus</td><td>Фильтр высоких частот на обработанном сигнале: низ остаётся сухим и плотным.</td><td class="r">20 – 2000 Гц</td></tr>
+    <tr><td>Width</td><td>0 % — копии по центру, 100 % — левая и правая разведены.</td><td class="r">0 – 100 %</td></tr>
+    <tr><td>Window</td><td>Окно шифтера: короче — чётче, длиннее — мягче.</td><td class="r">20 – 60 мс</td></tr>
+  </table>
+
+  <h3>Staircase</h3>
+  <figure><img src="img/mod_staircase.jpg"></figure>
+  <p>Питч-шифтер в петле обратной связи задержки: каждое эхо на интервал выше (или ниже). В N-EDO с шагом +1 за N повторов набирается октава.</p>
+  <table class="mods">
+    <tr><td>Step</td><td>Интервал каждого повтора: −1200 … +1200 ¢, отношение или −24 … +24 шага.</td><td class="r">+1 шаг</td></tr>
+    <tr><td>Sync / Time / Division</td><td>Время в мс или деление такта (1/1 … 1/32, с точкой и триолями).</td><td class="r">20 – 2000 мс</td></tr>
+    <tr><td>Feedback</td><td>Сколько повторов.</td><td class="r">0 – 95 %</td></tr>
+    <tr><td>Tone</td><td>Фильтр в петле: каждый повтор темнее.</td><td class="r">500 – 20000 Гц</td></tr>
+    <tr><td>Window</td><td>Окно шифтера.</td><td class="r">20 – 60 мс</td></tr>
+  </table>
+</section>
+
+<section>
+  <h3 style="margin-top: 0">Harmonizer</h3>
+  <figure><img src="img/mod_harmonizer.jpg"></figure>
+  <p>Два голоса на интервалах. <b>Quality</b> — PSOLA по высоте соло-голоса (точнее, задержка ~50 мс); <b>Low latency</b> — линия задержки (без задержки, работает и с аккордами; на соло-голосе окно подгоняется под его период). Шаги строя в обоих режимах — настоящие ступени вокруг высоты голоса, если она определилась.</p>
+  <table class="mods">
+    <tr><td>Voice 1, Voice 2</td><td>Интервалы: −1200 … +1200 ¢, отношение (по умолчанию 5/4 и 3/2) или −24 … +24 шага.</td><td class="r">5/4, 3/2</td></tr>
+    <tr><td>Level 1, Level 2</td><td>Громкость голосов.</td><td class="r">0 – 100 %</td></tr>
+  </table>
+
+  <h3>Autotune</h3>
+  <figure><img src="img/mod_autotune.jpg"></figure>
+  <p>Определяет высоту монофонического голоса (YIN) и подтягивает её к ближайшей ступени строя или к ноте, которую вы держите (<b>Held notes</b>, в любой октаве). Режимы — как у Harmonizer.</p>
+  <table class="mods">
+    <tr><td>Speed</td><td>Скорость подтяжки: 0 — мгновенно (ступеньками), больше — плавный глайд.</td><td class="r">0 – 500 мс</td></tr>
+    <tr><td>Amount</td><td>Доля поправки.</td><td class="r">0 – 100 %</td></tr>
+  </table>
+
+  <h3>Resonator</h3>
+  <figure><img src="img/mod_resonator.jpg"></figure>
+  <p>Каждая нота MIDI / MPE включает банк двухполюсных резонаторов на своей высоте — с бендом, Glide и Snap. На вход подходит любое аудио: барабаны, шум, синтезатор. Без нот резонатор молчит.</p>
+  <table class="mods">
+    <tr><td>Decay</td><td>Звон каждого резонатора (до −60 dB).</td><td class="r">20 мс – 8 с</td></tr>
+    <tr><td>Bright</td><td>Громкость верхних партиалов.</td><td class="r">0 – 100 %</td></tr>
+    <tr><td>Partials</td><td>Число партиалов на ноту.</td><td class="r">1 – 8</td></tr>
+    <tr><td>On scale</td><td>Партиалы выше первого подтягиваются к ступеням строя: колокола, которые звучат «в строе».</td><td class="r">вкл / выкл</td></tr>
+    <tr><td>Stretch</td><td>Растяжение (+) или сжатие (−) партиалов.</td><td class="r">−50 … +50 %</td></tr>
+    <tr><td>Release</td><td>Затухание после отпускания ноты.</td><td class="r">20 мс – 8 с</td></tr>
+    <tr><td>Gain</td><td>Громкость резонатора.</td><td class="r">−24 … +24 dB</td></tr>
+    <tr><td>Velocity</td><td>Насколько сила нажатия влияет на громкость.</td><td class="r">0 – 100 %</td></tr>
+  </table>
+</section>
+
+<section>
+  <h3 style="margin-top: 0">Shifter</h3>
+  <figure><img src="img/mod_shifter.jpg"></figure>
+  <p>Частотный сдвиг: однополосная модуляция через фильтр Гильберта (пара цепочек allpass). Все партиалы сдвигаются на одно число герц — гармонии становятся металлическими, малые сдвиги дают биения и фейзинг.</p>
+  <table class="mods">
+    <tr><td>Shift</td><td>Сдвиг в герцах.</td><td class="r">−2000 … +2000 Гц</td></tr>
+    <tr><td>Sync / Cycle</td><td>Биения в темп: Δf = BPM / 60 / доли цикла. Цикл 1/4 при 120 BPM — 2 Гц.</td><td class="r">4 bars … 1/32</td></tr>
+    <tr><td>Direction</td><td>Вверх или вниз (при Sync).</td><td class="r">Up / Down</td></tr>
+    <tr><td>Feedback</td><td>Обратная связь: бесконечно поднимающийся или опускающийся звук (barber-pole).</td><td class="r">0 – 95 %</td></tr>
+    <tr><td>Spread</td><td>Правый канал сдвигается в другую сторону.</td><td class="r">0 – 100 %</td></tr>
+  </table>
+
+  <h3>Varispeed</h3>
+  <figure><img src="img/mod_varispeed.jpg"></figure>
+  <table class="mods">
+    <tr><td>Speed</td><td>Постоянный сдвиг высоты.</td><td class="r">−1200 … +1200 ¢</td></tr>
+    <tr><td>Ramp, Length</td><td>Рампа высоты по темпу: пила от 0 до Ramp за Length (4 bars … 1/32), когда песня играет.</td><td class="r">−1200 … +1200 ¢</td></tr>
+    <tr><td>Wow, Flutter</td><td>Медленное (0.7 Гц) и быстрое (~9 Гц) дрожание ленты.</td><td class="r">0 – 100 ¢, 0 – 30 ¢</td></tr>
+    <tr><td>Brake, Brake time</td><td>Тормоз ленты: включите — лента останавливается, выключите — разгоняется и сшивается с живым сигналом. Удобно автоматизировать.</td><td class="r">50 мс – 4 с</td></tr>
+  </table>
+
+  <h3>Spectral</h3>
+  <figure><img src="img/mod_spectral.jpg"></figure>
+  <p>STFT, поиск пиков спектра и ресинтез фазовым вокодером. <b>Snap</b> переносит каждый партиал на ближайшую ступень строя. <b>Stretch</b> растягивает гармоники так, чтобы 2:1 стало периодом строя (идея Сетареса: тембр звучит консонансно в своём строе) — нужен строй с периодом не в октаву, например тритава Болена — Пирса.</p>
+  <table class="mods">
+    <tr><td>Amount</td><td>Доля переноса.</td><td class="r">0 – 100 %</td></tr>
+    <tr><td>Threshold</td><td>Пики тише порога не трогаются.</td><td class="r">−90 … −20 dB</td></tr>
+    <tr><td>Latency</td><td>Quality — окно 2048 семплов, Low latency — 1024.</td><td class="r">2048 / 1024</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="n">11</span>Кубик, пресеты, настройки</h2>
+  <h3>Кубик</h3>
+  <p>Случайные Mix и ручки модулей, стоящих в rack'е, в безопасных пределах: Mix не ниже 40 %, обратная связь не выше 75 %, интервалы гармонайзера — из консонансов. Не трогает громкость выхода, состав rack'а, bypass, строй, нотный слой, матрицу, режимы задержки, Sync и тормоз. Настройки → Randomizer: Mix, Module settings и (по умолчанию выключено) порядок слотов и параллельные группы.</p>
+  <h3>Пресеты</h3>
+  <p>Шаблоны задают состав rack'а, строй и все ручки; громкость выхода и загруженные файлы Scala не трогают.</p>
+  <table>
+    <tr><th>Шаблон</th><th>Что внутри</th></tr>
+    <tr><td>Init</td><td>Пустой rack, 12-EDO.</td></tr>
+    <tr><td>Micro Double, Wide Detune</td><td>Дублер на 9 ¢; шире — с медленным частотным сдвигом.</td></tr>
+    <tr><td>19-EDO Stairs, Octave in Seven, Falling Stairs</td><td>Эхо по ступеням 19-EDO, 7-EDO и вниз по полутонам.</td></tr>
+    <tr><td>Barber Pole, Tempo Beats</td><td>Бесконечный подъём и биения раз в долю.</td></tr>
+    <tr><td>Just Choir, Septimal Fifths</td><td>Гармонайзер на 5/4 + 3/2 в чистом строе; 7/4 и 3/2.</td></tr>
+    <tr><td>Hard Tune, Glide Tune 31</td><td>Мгновенный автотюн; плавный — в 31-EDO.</td></tr>
+    <tr><td>Ringing Strings, Scale Bells, MPE Glide Rack</td><td>Резонатор на нотах; колокола в 17-EDO; резонатор с Glide, Snap, посадкой и матрицей.</td></tr>
+    <tr><td>Tape Wobble, Tape Stop, Pitch Dive</td><td>Лента: дрожание, тормоз (автоматизируйте Brake), рампа на октаву вниз за такт.</td></tr>
+    <tr><td>Sethares Snap, Bohlen-Pierce Stretch</td><td>Спектр на ступени 10-EDO; растяжение под тритаву с эхом по шагам.</td></tr>
+  </table>
+  <p>Свои пресеты — меню пресета → Save preset. Внутри — rack, все ручки и строй (отношения, файлы Scala). Лежат в <code>~/Music/Comma/Presets/*.comma</code>.</p>
+  <h3>Настройки</h3>
+  <p>Appearance (Oxygen — светлая, Rubber — тёмная, или по системе), Size, Randomizer, Undo, Redo, Add module…, Load Scala file…, Act as MTS-ESP master, Save preset…, About Comma.</p>
+</section>
+
+<section>
+  <h2><span class="n">12</span>Рецепты</h2>
+  <div class="keep"><h3>Дрожащий вокал в 19-EDO</h3>
+  <p>Tuning → N-EDO → 19. Rack: Autotune (Speed 40 мс) → Doubler (Steps, 1 шаг = 63 ¢, Mix 35 %) → Staircase (Steps +1, 1/8, Feedback 60 %, Mix 30 %).</p></div>
+  <div class="keep"><h3>Барабаны поют аккорд</h3>
+  <p>Rack: Resonator (Decay 2 с, Partials 6, On scale). Пришлите аккорд с MIDI-дорожки — бочка и хэты звенят его нотами. Snap 70 % и Glide 150 мс дают скольжение между аккордами.</p></div>
+  <div class="keep"><h3>Биения в темп</h3>
+  <p>Shifter: Sync, Cycle 1/2, Mix 50 %. Две копии сигнала расходятся и сходятся раз в полтакта.</p></div>
+  <div class="keep"><h3>Чистые терции</h3>
+  <p>Tuning → Ratios → 5-limit just intonation. Harmonizer: Voice 1 = Steps +2 (настоящая терция 5/4 от ноты голоса), Voice 2 = Ratio 3/2.</p></div>
+  <div class="keep"><h3>Тембр для тритавы</h3>
+  <p>Tuning → Ratios: <code>27/25 25/21 9/7 7/5 75/49 5/3 9/5 49/25 15/7 7/3 63/25 25/9 3/1</code>. Spectral: Stretch 100 %. Гармоники растягиваются так, что 2:1 становится 3:1 — аккорды Болена — Пирса перестают биться.</p></div>
+  <div class="keep"><h3>Глиссандо по ступеням</h3>
+  <p>MPE-контроллер, Resonator. Notes: Glide by Rate 2400 ¢/с, Character 100 %, Overshoot 15 ¢, Vibrato 10 ¢ — скольжение становится лестницей, а на каждой остановке нота «садится» с перелётом.</p></div>
+</section>
+
+<section>
+  <h2><span class="n">13</span>Вопросы и ответы</h2>
+  <div class="keep"><h3>Comma не принимает ноты в Logic</h3>
+  <p>Ставьте Comma из меню MIDI-controlled Effects (не Audio FX), а MIDI-дорожку с нотами выберите в меню Side Chain в заголовке окна плагина.</p></div>
+  <div class="keep"><h3>Колесо бенда уводит ноту на несколько октав</h3>
+  <p>Диапазон бенда по умолчанию — ±48 (стандарт MPE). Для обычной клавиатуры поставьте Bend на ±2 во вкладке Notes.</p></div>
+  <div class="keep"><h3>MTS-ESP: «No MTS-ESP master found»</h3>
+  <p>Поставьте в проект мастер MTS-ESP (например, MTS-ESP Mini) — Comma подхватит строй сам. Или сделайте мастером сам Comma: настройки → Act as MTS-ESP master.</p></div>
+  <div class="keep"><h3>Звук сдвинут после включения Quality</h3>
+  <p>PSOLA и STFT смотрят вперёд, поэтому добавляют задержку; Comma сообщает её хосту, и DAW компенсирует. Для живой игры выберите Low latency.</p></div>
+  <div class="keep"><h3>Harmonizer на аккордах звучит грязно</h3>
+  <p>Quality рассчитан на один голос. Для аккордов выберите Low latency.</p></div>
+  <div class="keep"><h3>Резонатор молчит</h3>
+  <p>Ему нужны ноты: пришлите MIDI / MPE (раздел 02) и звук на вход.</p></div>
+  <div class="keep"><h3>Что значит «1 step = 63.2 ¢ (mean step)»</h3>
+  <p>Doubler и Staircase не знают высоту входа, поэтому шаг строя для них — средний: период, делённый на число ступеней. В N-EDO это ровно одна ступень.</p></div>
+</section>
+
+</body>
+</html>
